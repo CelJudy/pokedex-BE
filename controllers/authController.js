@@ -34,11 +34,10 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     // Buscar usuario por email
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
 
-    if (!user) {
+    const user = await db.query(`SELECT * FROM users WHERE mail = $1`, [email.toLowerCase()]);
+
+    if (user.rowCount === 0) {
       return res.status(401).json({
         success: false,
         message: 'Credenciales inválidas',
@@ -46,7 +45,7 @@ const login = async (req, res, next) => {
     }
 
     // Verificar contraseña
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.rows[0].pass);
 
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -56,7 +55,7 @@ const login = async (req, res, next) => {
     }
 
     // Generar token JWT
-    const token = generateToken(user.id, user.email);
+    const token = generateToken(user.rows[0].id, user.email);
 
     // Respuesta exitosa
     res.json({
@@ -65,9 +64,8 @@ const login = async (req, res, next) => {
       data: {
         token,
         user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
+          id: user.rows[0].id,
+          email: user.rows[0].mail,
         },
       },
     });
