@@ -34,11 +34,10 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     // Buscar usuario por email
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
 
-    if (!user) {
+    const user = await db.query(`SELECT * FROM users WHERE mail = $1 and active is true`, [email.toLowerCase()]);
+
+    if (user.rowCount === 0) {
       return res.status(401).json({
         success: false,
         message: 'Credenciales inválidas',
@@ -46,7 +45,7 @@ const login = async (req, res, next) => {
     }
 
     // Verificar contraseña
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.rows[0].pass);
 
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -55,8 +54,11 @@ const login = async (req, res, next) => {
       });
     }
 
+    const response = await db.query(`select ARRAY_AGG(pokemon) as pokemon from favorite where user_id=$1`, 
+        [user.rows[0].id]);
+
     // Generar token JWT
-    const token = generateToken(user.id, user.email);
+    const token = generateToken(user.rows[0].id, user.email);
 
     // Respuesta exitosa
     res.json({
@@ -64,10 +66,10 @@ const login = async (req, res, next) => {
       message: 'Login exitoso',
       data: {
         token,
+        pokemon:response.rows[0].pokemon,
         user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
+          id: user.rows[0].id,
+          email: user.rows[0].mail,
         },
       },
     });
@@ -267,34 +269,9 @@ const confirmEmail = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/auth/renew
- * Renueva el token JWT
- */
-const renewToken = async (req, res, next) => {
-  try {
-    // El middleware authenticateToken ya verificó el token y agregó req.user
-    const { userId, email } = req.user;
-
-    // Generar nuevo token
-    const newToken = generateToken(userId, email);
-
-    res.json({
-      success: true,
-      message: 'Token renovado exitosamente',
-      data: {
-        token: newToken,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 module.exports = {
   login,
   register,
   confirmEmail,
-  renewToken,
 };
 

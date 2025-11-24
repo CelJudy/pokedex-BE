@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const cors = require('./config/cors');
 const routes = require('./routes');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const rateLimiter = require('./middleware/rateLimiter');
 
 // Crear aplicación Express
 const app = express();
@@ -12,6 +13,7 @@ const app = express();
 app.use(cors);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(rateLimiter);
 
 // Logs con Morgan
 if (process.env.NODE_ENV === 'development') {

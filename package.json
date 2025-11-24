@@ -6,9 +6,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "test": "jest"
   },
   "keywords": [
     "express",
@@ -20,19 +18,18 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@prisma/client": "^5.19.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.0",
     "nodemailer": "^6.9.15",
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11",
-    "prisma": "^5.19.1"
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.11"
   }
 }
