@@ -269,34 +269,9 @@ const confirmEmail = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/auth/renew
- * Renueva el token JWT
- */
-const renewToken = async (req, res, next) => {
-  try {
-    // El middleware authenticateToken ya verificó el token y agregó req.user
-    const { userId, email } = req.user;
-
-    // Generar nuevo token
-    const newToken = generateToken(userId, email);
-
-    res.json({
-      success: true,
-      message: 'Token renovado exitosamente',
-      data: {
-        token: newToken,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 module.exports = {
   login,
   register,
   confirmEmail,
-  renewToken,
 };
 
