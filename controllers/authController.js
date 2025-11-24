@@ -35,7 +35,7 @@ const login = async (req, res, next) => {
 
     // Buscar usuario por email
 
-    const user = await db.query(`SELECT * FROM users WHERE mail = $1`, [email.toLowerCase()]);
+    const user = await db.query(`SELECT * FROM users WHERE mail = $1 and active is true`, [email.toLowerCase()]);
 
     if (user.rowCount === 0) {
       return res.status(401).json({
@@ -54,6 +54,9 @@ const login = async (req, res, next) => {
       });
     }
 
+    const response = await db.query(`select ARRAY_AGG(pokemon) as pokemon from favorite where user_id=$1`, 
+        [user.rows[0].id]);
+
     // Generar token JWT
     const token = generateToken(user.rows[0].id, user.email);
 
@@ -63,6 +66,7 @@ const login = async (req, res, next) => {
       message: 'Login exitoso',
       data: {
         token,
+        pokemon:response.rows[0].pokemon,
         user: {
           id: user.rows[0].id,
           email: user.rows[0].mail,
